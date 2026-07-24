@@ -1,8 +1,8 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import imgChampagneSatin from '../assets/images/abayas/champagne_satin_silk.png';
-import imgRoyalGoldZari  from '../assets/images/abayas/royal_gold_zari.png';
-import imgSaharaDrape    from '../assets/images/abayas/sahara_drape_black.png';
+import imgChampagneSatin from '../assets/images/abayas/p_img2.jpg';
+import imgRoyalGoldZari  from '../assets/images/abayas/p_img2_1.jpg';
+import imgSaharaDrape    from '../assets/images/abayas/p_img1.jpg';
 
 export default function SeasonalCollections({ onExploreCollection }) {
   return (

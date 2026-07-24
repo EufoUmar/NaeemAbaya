@@ -7,13 +7,18 @@
 // ─────────────────────────────────────────────────────────────
 
 export const CATEGORIES = [
-  { id: 'all',       name: 'All Abayas'            },
-  { id: 'new',       name: 'New Arrivals'           },
-  { id: 'royal',     name: 'Royal Gold & Embroidery'},
-  { id: 'velvet',    name: 'Velvet Collection'      },
-  { id: 'bridal',    name: 'Bridal & Occasion'      },
-  { id: 'silk',      name: 'Silk & Satin'           },
-  { id: 'everyday',  name: 'Everyday Chic'          },
-  { id: 'ramadan',   name: 'Ramadan Edit'           },
-  { id: 'eid',       name: "Eid Collection"         },
+  { id: 'all',      name: 'All Abayas' },
+  { id: 'nida',     name: 'Nida'       },
+  { id: 'zoom',     name: 'Zoom'       },
+  { id: 'tiktok',   name: 'Tik Tok'   },
+];
+
+// ─────────────────────────────────────────────────────────────
+//  Abaya types — open-front vs closed
+// ─────────────────────────────────────────────────────────────
+
+export const TYPES = [
+  { id: 'all',    name: 'All Types' },
+  { id: 'open',   name: 'Open'      },
+  { id: 'closed', name: 'Closed'    },
 ];

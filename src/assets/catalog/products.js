@@ -118,7 +118,7 @@ export const PRODUCTS = [
     description:  'A graceful closed Nida chiffon abaya in a warm mocha tone, featuring elegant pleated front panels and elasticated cuffs. Adorned with a handcrafted rose fabric brooch and tassel pin at the chest — a signature Naeem Abaya detail.',
     careInstructions: 'Hand wash cold. Do not wring or tumble dry.',
     sizes:        ['52 (XS/S)', '54 (S/M)', '56 (M/L)', '58 (L/XL)', '60 (XL/XXL)', 'Custom Bespoke'],
-    isNew:        false,
+    isNew:        true,
     isBestSeller: true,
     rating:       4.97,
     reviewsCount: 64,
@@ -137,7 +137,7 @@ export const PRODUCTS = [
     description:  'Elegant and understated, this bottle green closed Nida chiffon abaya features refined pleated front panels with puffed elasticated cuffs. The signature handcrafted rose & tassel brooch adds a touch of artisanal luxury to everyday wear.',
     careInstructions: 'Hand wash cold. Do not wring or tumble dry.',
     sizes:        ['52 (XS/S)', '54 (S/M)', '56 (M/L)', '58 (L/XL)', '60 (XL/XXL)', 'Custom Bespoke'],
-    isNew:        false,
+    isNew:        true,
     isBestSeller: false,
     rating:       4.88,
     reviewsCount: 41,
@@ -194,7 +194,7 @@ export const PRODUCTS = [
     description:  'A statement-making open abaya in fluid black chiffon, decorated with scattered hand-applied floral petal appliqués across the chest and shoulders. Each petal is individually crafted in complementary tones — black, ivory and rose gold — for a truly artistic finish.',
     careInstructions: 'Dry clean only to preserve appliqué work.',
     sizes:        ['52 (XS/S)', '54 (S/M)', '56 (M/L)', '58 (L/XL)', '60 (XL/XXL)', 'Custom Bespoke'],
-    isNew:        false,
+    isNew:        true,
     isBestSeller: true,
     rating:       4.98,
     reviewsCount: 77,
@@ -227,8 +227,8 @@ export const PRODUCTS = [
 
 ];
 
-// ── New Arrivals (first 3 "new" products) ─────────────────────
-export const NEW_ARRIVALS = PRODUCTS.filter(p => p.isNew).slice(0, 3);
+// ── New Arrivals (all "new" products) ─────────────────────────
+export const NEW_ARRIVALS = PRODUCTS.filter(p => p.isNew);
 
 // ── Best Sellers ──────────────────────────────────────────────
 export const BEST_SELLERS = PRODUCTS.filter(p => p.isBestSeller);

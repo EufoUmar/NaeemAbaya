@@ -28,8 +28,8 @@ export default function NewArrivals({
           </button>
         </div>
 
-        {/* 3 Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {NEW_ARRIVALS.map((product) => {
             const convertedPrice = (product.priceUSD * curr.rate).toFixed(2);
             const isWishlisted = wishlist.some((w) => w.id === product.id);

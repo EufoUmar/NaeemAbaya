@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle, CreditCard, Lock } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 
 export default function CheckoutModal({
@@ -9,12 +9,6 @@ export default function CheckoutModal({
   currency,
   onOrderComplete
 }) {
-  if (!isOpen) return null;
-
-  const curr = CURRENCIES[currency] || CURRENCIES.USD;
-  const subtotalUSD = cartItems.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
-  const totalConverted = (subtotalUSD * curr.rate).toFixed(0);
-
   const [step, setStep] = useState('form'); // 'form' or 'success'
   const [formData, setFormData] = useState({
     fullName: '',
@@ -24,6 +18,12 @@ export default function CheckoutModal({
     country: 'United Arab Emirates',
     paymentMethod: 'card'
   });
+
+  if (!isOpen) return null;
+
+  const curr = CURRENCIES[currency] || CURRENCIES.USD;
+  const subtotalUSD = cartItems.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
+  const totalConverted = (subtotalUSD * curr.rate).toFixed(0);
 
   const handleSubmit = (e) => {
     e.preventDefault();

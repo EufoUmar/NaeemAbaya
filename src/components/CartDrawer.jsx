@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShoppingBag, Trash2, Plus, Minus, Tag, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, ShoppingBag, Trash2, Plus, Minus, Tag, ArrowRight, Sparkles, Copy, Check } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 
 export default function CartDrawer({
@@ -11,12 +11,60 @@ export default function CartDrawer({
   currency,
   onProceedCheckout
 }) {
-  if (!isOpen) return null;
-
-  const curr = CURRENCIES[currency] || CURRENCIES.USD;
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [promoMsg, setPromoMsg] = useState('');
+  const [copiedItemId, setCopiedItemId] = useState(null);
+
+  if (!isOpen) return null;
+
+  const curr = CURRENCIES[currency] || CURRENCIES.USD;
+
+  // Function to copy cart item image to clipboard
+  const handleCopyImage = async (imgSrc, itemKey) => {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = imgSrc;
+
+      await new Promise((resolve, reject) => {
+        if (img.complete) resolve();
+        else {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('Image failed to load'));
+        }
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width || 300;
+      canvas.height = img.naturalHeight || img.height || 400;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+
+      if (blob && navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        setCopiedItemId(itemKey);
+        setTimeout(() => setCopiedItemId(null), 2500);
+        return;
+      }
+    } catch (err) {
+      console.warn('Image blob copy failed, falling back to copying image URL:', err);
+    }
+
+    // Fallback to copying absolute URL
+    try {
+      const fullUrl = imgSrc.startsWith('http') ? imgSrc : new URL(imgSrc, window.location.href).href;
+      await navigator.clipboard.writeText(fullUrl);
+      setCopiedItemId(itemKey);
+      setTimeout(() => setCopiedItemId(null), 2500);
+    } catch (err) {
+      console.error('Failed to copy image link:', err);
+    }
+  };
 
   // Subtotal in USD
   const subtotalUSD = cartItems.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
@@ -94,68 +142,116 @@ export default function CartDrawer({
               </p>
             </div>
           ) : (
-            cartItems.map((item, idx) => (
-              <div
-                key={item.id + (item.selectedSize || '') + idx}
-                className="p-3.5 rounded-xl bg-[#18181f] border border-white/5 flex gap-3 relative"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-20 h-24 object-cover object-center rounded-lg bg-black/40"
-                />
+            cartItems.map((item, idx) => {
+              const itemKey = item.id + (item.selectedSize || '') + idx;
+              const isCopied = copiedItemId === itemKey;
 
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between">
-                      <h4 className="font-heading text-xs font-bold text-white line-clamp-1">
-                        {item.name}
-                      </h4>
-                      <button
-                        onClick={() => onRemoveItem(item)}
-                        className="text-gray-500 hover:text-red-400 p-1"
-                        title="Remove"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <span className="text-[11px] text-[#D4AF37] font-medium block">
-                      Size: {item.selectedSize || 'Standard 56'}
-                    </span>
-
-                    {item.customNotes && (
-                      <p className="text-[10px] text-gray-400 italic line-clamp-1">
-                        {item.customNotes}
-                      </p>
-                    )}
+              return (
+                <div
+                  key={itemKey}
+                  className="p-3.5 rounded-xl bg-[#18181f] border border-white/5 flex gap-3 relative group/card hover:border-[#D4AF37]/20 transition-all"
+                >
+                  {/* Image container with copy overlay button */}
+                  <div className="relative flex-shrink-0 group/img">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-20 h-24 object-cover object-center rounded-lg bg-black/40 border border-white/5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopyImage(item.image, itemKey)}
+                      title="Copy Image"
+                      className={`absolute bottom-1 right-1 p-1.5 rounded-md text-xs backdrop-blur-md transition-all shadow-lg ${
+                        isCopied
+                          ? 'bg-emerald-600 text-white scale-110'
+                          : 'bg-black/75 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black border border-[#D4AF37]/40'
+                      }`}
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2">
-                    {/* Quantity controls */}
-                    <div className="flex items-center border border-white/10 rounded-md bg-black/40">
-                      <button
-                        onClick={() => onUpdateQuantity(item, item.quantity - 1)}
-                        className="p-1 text-gray-400 hover:text-white"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="px-2 text-xs font-bold text-white">{item.quantity}</span>
-                      <button
-                        onClick={() => onUpdateQuantity(item, item.quantity + 1)}
-                        className="p-1 text-gray-400 hover:text-white"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between gap-1">
+                        <h4 className="font-heading text-xs font-bold text-white line-clamp-1">
+                          {item.name}
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => onRemoveItem(item)}
+                          className="text-gray-500 hover:text-red-400 p-1 flex-shrink-0"
+                          title="Remove"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <span className="text-[11px] text-[#D4AF37] font-medium block mt-0.5">
+                        Size: {item.selectedSize || 'Standard 56'}
+                      </span>
+
+                      {item.customNotes && (
+                        <p className="text-[10px] text-gray-400 italic line-clamp-1">
+                          {item.customNotes}
+                        </p>
+                      )}
+
+                      {/* Explicit "Copy Image" Action Button */}
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyImage(item.image, itemKey)}
+                          className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-md border transition-all ${
+                            isCopied
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                              : 'bg-white/5 border-white/10 text-gray-300 hover:text-[#D4AF37] hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/10'
+                          }`}
+                        >
+                          {isCopied ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span>Image Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-[#D4AF37]" />
+                              <span>Copy Image</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
-                    <span className="text-xs font-bold text-[#F3E5AB] font-heading">
-                      {curr.symbol}{((item.priceUSD * item.quantity) * curr.rate).toFixed(0)}
-                    </span>
+                    <div className="flex items-center justify-between mt-2">
+                      {/* Quantity controls */}
+                      <div className="flex items-center border border-white/10 rounded-md bg-black/40">
+                        <button
+                          type="button"
+                          onClick={() => onUpdateQuantity(item, item.quantity - 1)}
+                          className="p-1 text-gray-400 hover:text-white"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="px-2 text-xs font-bold text-white">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateQuantity(item, item.quantity + 1)}
+                          className="p-1 text-gray-400 hover:text-white"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <span className="text-xs font-bold text-[#F3E5AB] font-heading">
+                        {curr.symbol}{((item.priceUSD * item.quantity) * curr.rate).toFixed(0)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -175,6 +271,7 @@ export default function CartDrawer({
                 <Tag className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
               </div>
               <button
+                type="button"
                 onClick={applyPromo}
                 className="py-2 px-3 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-black transition-colors"
               >
@@ -215,6 +312,7 @@ export default function CartDrawer({
 
             {/* Checkout Button */}
             <button
+              type="button"
               onClick={onProceedCheckout}
               className="btn-primary w-full py-4 text-xs uppercase tracking-widest flex items-center justify-center gap-2"
             >
@@ -227,3 +325,4 @@ export default function CartDrawer({
     </div>
   );
 }
+

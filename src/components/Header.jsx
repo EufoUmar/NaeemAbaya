@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Heart, Search, Menu, X, Globe } from 'lucide-react';
+import { Heart, Search, Menu, X, Globe } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 
 export default function Header({
-  cartCount,
   wishlistCount,
-  onOpenCart,
   onOpenWishlist,
   activeCurrency,
   onChangeCurrency,
@@ -97,26 +95,13 @@ export default function Header({
 
           <button
             onClick={onOpenWishlist}
-            className="relative p-2 text-[#1c1c1c] hover:opacity-70"
-            title="Wishlist"
+            className="relative p-2 text-[#1c1c1c] hover:opacity-70 flex items-center gap-1.5"
+            title="Saved Pictures Gallery"
           >
             <Heart className="w-5 h-5 stroke-[1.5]" />
             {wishlistCount > 0 && (
-              <span className="absolute top-0 right-0 bg-[#b86e4e] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+              <span className="bg-[#b86e4e] text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white">
                 {wishlistCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={onOpenCart}
-            className="relative p-2 text-[#1c1c1c] hover:opacity-70 flex items-center gap-1.5"
-            title="Shopping Bag"
-          >
-            <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-            {cartCount > 0 && (
-              <span className="bg-[#40362e] text-[#f4efe6] text-[10px] px-1.5 py-0.5 rounded-full font-medium">
-                {cartCount}
               </span>
             )}
           </button>

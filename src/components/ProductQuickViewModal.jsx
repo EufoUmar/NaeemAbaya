@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import { X, Star, ShieldCheck, Ruler, Truck, Sparkles, Check, ShoppingBag, Heart } from 'lucide-react';
+import { X, Star, Ruler, Sparkles, Heart, Copy, Download, Check } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
+import { downloadImage, copyImageToClipboard } from '../utils/mediaUtils';
 
 export default function ProductQuickViewModal({
   product,
   currency,
   isWishlisted,
   onClose,
-  onAddToCart,
   onToggleWishlist
 }) {
-  if (!product) return null;
-
-  const curr = CURRENCIES[currency] || CURRENCIES.USD;
-  const convertedPrice = (product.priceUSD * curr.rate).toFixed(0);
-
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
+  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '56 (M/L)');
   const [activeTab, setActiveTab] = useState('details');
   
   // Custom bespoke measurements
@@ -23,17 +18,29 @@ export default function ProductQuickViewModal({
   const [lengthInch, setLengthInch] = useState('56');
   const [sleeveInch, setSleeveInch] = useState('27');
 
-  const handleAdd = () => {
-    const customNotes = selectedSize.includes('Custom')
-      ? `Custom Fit: Bust ${bustInch}", Length ${lengthInch}", Sleeve ${sleeveInch}"`
-      : null;
+  const [copied, setCopied] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
-    onAddToCart({
-      ...product,
-      selectedSize,
-      customNotes
-    });
-    onClose();
+  if (!product) return null;
+
+  const curr = CURRENCIES[currency] || CURRENCIES.USD;
+  const convertedPrice = (product.priceUSD * curr.rate).toFixed(0);
+
+  const handleCopy = async () => {
+    const success = await copyImageToClipboard(product.image);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownload = async () => {
+    const fileName = `${product.name.replace(/[^a-zA-Z0-9]/g, '_')}_NaeemAbaya.jpg`;
+    const success = await downloadImage(product.image, fileName);
+    if (success) {
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2000);
+    }
   };
 
   return (
@@ -41,22 +48,71 @@ export default function ProductQuickViewModal({
       <div className="relative w-full max-w-4xl bg-[#121216] border border-[#D4AF37]/30 rounded-2xl overflow-hidden shadow-2xl animate-slide-up max-h-[90vh] flex flex-col md:flex-row">
         {/* Close Button */}
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-gray-300 hover:text-white border border-white/10 hover:border-[#D4AF37]"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Side: Product Image Display */}
-        <div className="w-full md:w-1/2 bg-black/60 relative aspect-square md:aspect-auto">
+        {/* Left Side: Product Image Display with Media Action Overlays */}
+        <div className="w-full md:w-1/2 bg-black/60 relative aspect-square md:aspect-auto group">
           <img
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover object-center"
           />
-          <div className="absolute bottom-4 left-4 flex gap-2">
+          
+          <div className="absolute top-4 left-4 flex gap-2 z-10 pointer-events-none">
             <span className="badge-gold backdrop-blur-md">Haute Couture</span>
             {product.isBestSeller && <span className="badge-gold backdrop-blur-md">Top Selling</span>}
+          </div>
+
+          {/* Picture Action Buttons Bar (Bottom-left overlay) */}
+          <div className="absolute bottom-4 left-4 right-4 flex gap-2 z-10">
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 backdrop-blur-md transition-all border ${
+                copied
+                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  : 'bg-black/75 text-[#D4AF37] border-[#D4AF37]/50 hover:bg-[#D4AF37] hover:text-black'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Image Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Image</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownload}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 backdrop-blur-md transition-all border ${
+                downloaded
+                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  : 'bg-[#D4AF37]/20 text-[#F3E5AB] border-[#D4AF37]/60 hover:bg-[#D4AF37] hover:text-black'
+              }`}
+            >
+              {downloaded ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Downloaded!</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download Image</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -88,12 +144,13 @@ export default function ProductQuickViewModal({
               <span className="text-2xl font-bold text-[#F3E5AB] font-heading">
                 {curr.symbol}{convertedPrice}
               </span>
-              <span className="text-xs text-gray-400">Taxes included • Free Global Shipping</span>
+              <span className="text-xs text-gray-400">Pure Frontend Catalog • Instant Media Download</span>
             </div>
 
             {/* Tabs for Info */}
             <div className="flex gap-4 border-b border-white/10 mb-4 text-xs font-semibold uppercase tracking-wider">
               <button
+                type="button"
                 onClick={() => setActiveTab('details')}
                 className={`pb-2 border-b-2 transition-colors ${
                   activeTab === 'details' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-gray-400'
@@ -102,6 +159,7 @@ export default function ProductQuickViewModal({
                 Fabric & Specs
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('care')}
                 className={`pb-2 border-b-2 transition-colors ${
                   activeTab === 'care' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-gray-400'
@@ -139,6 +197,7 @@ export default function ProductQuickViewModal({
                 {product.sizes.map((sz) => (
                   <button
                     key={sz}
+                    type="button"
                     onClick={() => setSelectedSize(sz)}
                     className={`py-2 px-2 text-xs rounded-lg border font-medium transition-all ${
                       selectedSize === sz
@@ -191,9 +250,10 @@ export default function ProductQuickViewModal({
             )}
           </div>
 
-          {/* Actions */}
+          {/* Media Action Buttons Footer */}
           <div className="pt-4 border-t border-white/10 flex items-center gap-3">
             <button
+              type="button"
               onClick={() => onToggleWishlist(product)}
               className={`p-3 rounded-xl border transition-all ${
                 isWishlisted
@@ -206,11 +266,27 @@ export default function ProductQuickViewModal({
             </button>
 
             <button
-              onClick={handleAdd}
-              className="btn-primary flex-1 py-3.5 text-xs tracking-widest uppercase flex items-center justify-center gap-2"
+              type="button"
+              onClick={handleCopy}
+              className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border transition-all ${
+                copied
+                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  : 'bg-black/60 text-[#D4AF37] border-[#D4AF37]/50 hover:bg-[#D4AF37] hover:text-black'
+              }`}
             >
-              <ShoppingBag className="w-4 h-4" />
-              Add Selected Size to Bag
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <span>{copied ? 'Copied Image' : 'Copy Image'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownload}
+              className={`btn-primary flex-1 py-3.5 text-xs tracking-widest uppercase flex items-center justify-center gap-2 ${
+                downloaded ? 'bg-emerald-600 text-white border-emerald-500' : ''
+              }`}
+            >
+              {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+              <span>{downloaded ? 'Downloaded' : 'Download Picture'}</span>
             </button>
           </div>
         </div>
